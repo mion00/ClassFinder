@@ -16,15 +16,14 @@ package main;
  * @author mion00
  */
 public class Applicazione {
-    public static void main(String args[])
+    public static void main(String args[]) throws Exception
     {
         Applicazione app=new Applicazione();
     }
     
-    Applicazione()
+    Applicazione() throws Exception
     {
         java.util.Date data=new java.util.Date();
-        DatiPolo dati=new DatiPolo("Ingegneria",data);
-        System.out.println("fine");
+        DatiPolo dati=new DatiPolo("Povo1",data);
     }
 }
