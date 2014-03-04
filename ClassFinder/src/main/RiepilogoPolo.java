@@ -8,16 +8,8 @@ package main;
 
 /**
  *
- * @author mion00
+ * @author creamcodifier
  */
-public class Applicazione {
-    public static void main(String args[])
-    {
-        Applicazione app=new Applicazione();
-    }
+public class RiepilogoPolo {
     
-    Applicazione()
-    {
-        System.out.println("fine");
-    }
 }
