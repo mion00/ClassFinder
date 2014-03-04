@@ -11,5 +11,5 @@ package main;
  * @author creamcodifier
  */
 public class RiepilogoPolo {
-    
+    Aula[] aulePolo;
 }
