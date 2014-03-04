@@ -6,10 +6,12 @@
 
 package main;
 
+import java.util.List;
+
 /**
  *
  * @author creamcodifier
  */
 public class RiepilogoPolo {
-    Aula[] aulePolo;
+    List<Aula> aulePolo;
 }

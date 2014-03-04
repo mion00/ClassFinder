@@ -6,12 +6,23 @@
 
 package main;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+ 
+import javax.net.ssl.HttpsURLConnection;
+
+
 /**
  *
  * @author creamcodifier
  */
 public class DatiPolo {
     private RiepilogoPolo prospetto;
+    
+    private final String urlIniziale="http://webapps.unitn.it/Orari/it/Web/CalendarioCds";
     
     public DatiPolo(String nomePolo,java.util.Date data)
     {

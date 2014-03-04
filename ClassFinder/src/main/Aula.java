@@ -6,11 +6,13 @@
 
 package main;
 
+import java.util.List;
+
 /**
  *
  * @author creamcodifier
  */
 public class Aula {
-    Corso[] lezione;
+    List<Corso> lezione;
     String nome;
 }
