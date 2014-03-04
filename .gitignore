@@ -4,3 +4,6 @@
 *.jar
 *.war
 *.ear
+/ClassFinder/nbproject/private/
+/ClassFinder/dist/
+/ClassFinder/build/
