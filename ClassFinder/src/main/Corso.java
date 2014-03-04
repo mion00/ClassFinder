@@ -11,5 +11,8 @@ package main;
  * @author creamcodifier
  */
 public class Corso {
-    
+    java.util.Date orarioInizio;
+    java.util.Date orarioFine;
+    String nomeCorso;
+    String nomeProfessore;
 }

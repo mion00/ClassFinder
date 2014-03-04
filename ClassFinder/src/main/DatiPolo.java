@@ -11,5 +11,15 @@ package main;
  * @author creamcodifier
  */
 public class DatiPolo {
+    private RiepilogoPolo prospetto;
     
+    public DatiPolo(String nomePolo,java.util.Date data)
+    {
+        prospetto=new RiepilogoPolo();
+    }
+    
+    public RiepilogoPolo ProspettoPolo()
+    {
+        return prospetto;
+    }
 }

@@ -11,5 +11,6 @@ package main;
  * @author creamcodifier
  */
 public class Aula {
-    
+    Corso[] lezione;
+    String nome;
 }

@@ -18,6 +18,8 @@ public class Applicazione {
     
     Applicazione()
     {
+        java.util.Date data=new java.util.Date();
+        DatiPolo dati=new DatiPolo("Ingegneria",data);
         System.out.println("fine");
     }
 }
