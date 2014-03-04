@@ -13,5 +13,9 @@ import java.util.List;
  * @author creamcodifier
  */
 public class RiepilogoPolo {
-    List<Aula> aulePolo;
+    public List<Aula> aulePolo;
+    public RiepilogoPolo(List<Aula> aulePolo)
+    {
+        this.aulePolo=aulePolo;
+    }
 }
