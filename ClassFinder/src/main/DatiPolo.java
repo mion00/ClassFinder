@@ -7,6 +7,7 @@
 package main;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -15,7 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
  
 import javax.net.ssl.HttpsURLConnection;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
@@ -26,16 +29,6 @@ import org.jsoup.select.Elements;
  *
  * @author creamcodifier
  */
-class IndirizziDipartimenti
-{
-    String indirizzo;
-    String nome;
-    IndirizziDipartimenti(String indirizzo,String nome)
-    {
-        this.indirizzo=indirizzo;
-        this.nome=nome;
-    }
-}
 
 class IndirizziCorsi
 {
@@ -47,21 +40,37 @@ class IndirizziCorsi
         this.nome=nome;
     }
 }
+class IndirizziDipartimenti
+{
+    String indirizzo;
+    String nome;
+    List<IndirizziCorsi> indirizziCorsi;
+    IndirizziDipartimenti(String indirizzo,String nome)
+    {
+        this.indirizzo=indirizzo;
+        this.nome=nome;
+        indirizziCorsi=new ArrayList<>();
+    }
+    public void AggiungiCorso(IndirizziCorsi indirizzoCorso)
+    {
+        indirizziCorsi.add(indirizzoCorso);
+    }
+}
+
+
 
 public class DatiPolo {
     private RiepilogoPolo prospetto;
-    private static Document doc;
+    final private String urlRichiestePost="http://webapps.unitn.it/Orari/it/Web/AjaxCds";
+    final String urlIniziale="http://webapps.unitn.it/Orari/it/Web/CalendarioCds"; 
     
     private Document DownloadHTML() throws IOException {
-        
-        final String urlIniziale="http://webapps.unitn.it/Orari/it/Web/CalendarioCds";    
-
-        doc = Jsoup.connect(urlIniziale).get();
+        Document doc = Jsoup.connect(urlIniziale).get();
 
         return doc;
     }
     
-    private String CalcolaAnnoAccademico() {
+    private String CalcolaAnnoAccademico(Document doc) {
         Elements options = doc.getElementsByAttributeValue("name", "id");
         
         Elements anni = options.get(0).getElementsByTag("option");
@@ -74,7 +83,7 @@ public class DatiPolo {
     }
     
     
-    private List<IndirizziDipartimenti> CalcolaIndirizziDipartimenti() throws Exception
+    private List<IndirizziDipartimenti> CalcolaIndirizziDipartimenti(Document doc) throws Exception
     {
         List<IndirizziDipartimenti> indirizzi;
         indirizzi = new ArrayList<>();
@@ -94,7 +103,7 @@ public class DatiPolo {
     }
     
     
-    String MandaRichiestaPost(String parametri) throws Exception
+    String MandaRichiestaPostCorsi(String parametri) throws Exception
     {
         
         URL obj = new URL(urlRichiestePost);
@@ -123,31 +132,46 @@ public class DatiPolo {
         return response.toString();
     }
     
-    List<IndirizziCorsi> CalcolaIndirizziCorsi(List<IndirizziDipartimenti> indirizziDipartimenti, String anno) throws Exception
+    void CalcolaIndirizziCorsi(List<IndirizziDipartimenti> indirizziDipartimenti, String anno) throws Exception
     {
-        List<IndirizziCorsi> indirizzi;
-        List<JSONObject> json;
-        indirizzi=new ArrayList<>();
+
+        List<JSONArray> json;
+        
         json=new ArrayList<>();
         
+        Object obj; 
+
        for(int i=1;i<indirizziDipartimenti.size();i++)
        {
-           //json.add(new JSONObject(MandaRichiestaPost("id="+anno+"&id2="+indirizziDipartimenti.get(i).indirizzo)));
-           
+           obj=JSONValue.parse(MandaRichiestaPostCorsi("id="+anno+"&id2="+indirizziDipartimenti.get(i).indirizzo));
+           json.add((JSONArray)obj);
        }
- 
+       for(int i=0;i<json.size();i++)
+       {
+            for(int j=0;j<json.get(i).size();j++)
+            {
+                indirizziDipartimenti.get(i).AggiungiCorso(new IndirizziCorsi(((JSONObject)json.get(i).get(j)).get("Id").toString(),((JSONObject)json.get(i).get(j)).get("Descrizione").toString()));
+            }
+       }
 	//add reuqest header
-	
-        return indirizzi;
     }
     
     public DatiPolo(String nomePolo,java.util.Date data) throws Exception
     {
         List<Aula> aulePolo = null;
-        doc = DownloadHTML();
+        Document doc = DownloadHTML();
         
-        List<IndirizziDipartimenti> indirizziDipartimenti=CalcolaIndirizziDipartimenti();
-        List<IndirizziCorsi> indirizziCorsi=CalcolaIndirizziCorsi(indirizziDipartimenti,"2013");
+        List<IndirizziDipartimenti> dipartimenti=CalcolaIndirizziDipartimenti(doc);
+        CalcolaIndirizziCorsi(dipartimenti,CalcolaAnnoAccademico(doc));
+        //OttieniOrari(dipartimenti,)
+        for(int i=0;i<dipartimenti.size();i++)
+       {
+           System.out.println(dipartimenti.get(i).nome+" "+dipartimenti.get(i).indirizzo);
+            for(int j=0;j<dipartimenti.get(i).indirizziCorsi.size();j++)
+            {
+                System.out.println("      -"+dipartimenti.get(i).indirizziCorsi.get(j).nome+" "+dipartimenti.get(i).indirizziCorsi.get(j).indirizzo);
+            }
+       }
         
         prospetto=new RiepilogoPolo(aulePolo);
     }
