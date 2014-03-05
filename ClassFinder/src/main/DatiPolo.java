@@ -36,10 +36,10 @@ public class DatiPolo {
 
         String codiceSito;
         
-        /* print di debug
+        //print di debug
         while ((codiceSito = buffer.readLine()) != null)
             System.out.println(codiceSito);
-        buffer.close();*/
+        buffer.close();
         
         switch(nomePolo)
         {
