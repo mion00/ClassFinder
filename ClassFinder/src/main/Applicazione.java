@@ -30,17 +30,7 @@ public class Applicazione {
     {
         java.util.Date data=new java.util.Date();
         
-        Document doc = Jsoup.connect("http://webapps.unitn.it/Orari/it/Web/CalendarioCds").get();
         
-        Elements labels = doc.getElementsByAttributeValue("name", "id2");
-        
-        Elements dipartimenti = labels.get(0).getElementsByTag("option");
-        
-                
-        for (int i = 0; i<dipartimenti.size(); i++) {
-            System.out.println(dipartimenti.get(i).attributes() + " " + dipartimenti.get(i).html());
-//            TEST
-        }
 
         
         DatiPolo dati=new DatiPolo("Povo1",data);
