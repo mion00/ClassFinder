@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
  
 import javax.net.ssl.HttpsURLConnection;
+import org.json.simple.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -50,6 +51,7 @@ public class DatiPolo {
     private RiepilogoPolo prospetto;
     
     private final String urlIniziale="http://webapps.unitn.it/Orari/it/Web/CalendarioCds";
+    private final String urlRichiestePost = "http://webapps.unitn.it/Orari/it/Web/AjaxCds";
     
     private List<IndirizziDipartimenti> CalcolaIndirizziDipartimenti() throws Exception
     {
@@ -72,10 +74,51 @@ public class DatiPolo {
         return indirizzi;
     }
     
-    List<IndirizziCorsi> CalcolaIndirizziCorsi(List<IndirizziDipartimenti> indirizziDipartimenti) throws Exception
+    
+    String MandaRichiestaPost(String parametri) throws Exception
+    {
+        
+        URL obj = new URL(urlRichiestePost);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        con.setRequestMethod("POST");
+
+ 
+	// Send post request
+	con.setDoOutput(true);
+	DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+	wr.writeBytes(parametri);
+	wr.flush();
+	wr.close();
+ 
+	int responseCode = con.getResponseCode();
+ 
+	BufferedReader in = new BufferedReader(
+	        new InputStreamReader(con.getInputStream()));
+	String inputLine;
+	StringBuffer response = new StringBuffer();
+ 
+        while ((inputLine = in.readLine()) != null) {
+		response.append(inputLine);
+	}
+        in.close();
+        return response.toString();
+    }
+    
+    List<IndirizziCorsi> CalcolaIndirizziCorsi(List<IndirizziDipartimenti> indirizziDipartimenti, String anno) throws Exception
     {
         List<IndirizziCorsi> indirizzi;
+        List<JSONObject> json;
         indirizzi=new ArrayList<>();
+        json=new ArrayList<>();
+        
+       for(int i=1;i<indirizziDipartimenti.size();i++)
+       {
+           json.add(new JSONObject(MandaRichiestaPost("id="+anno+"&id2="+indirizziDipartimenti.get(i).indirizzo)));
+           
+       }
+ 
+	//add reuqest header
+	
         return indirizzi;
     }
     
@@ -83,7 +126,7 @@ public class DatiPolo {
     {
         List<Aula> aulePolo = null;
         List<IndirizziDipartimenti> indirizziDipartimenti=CalcolaIndirizziDipartimenti();
-        List<IndirizziCorsi> indirizziCorsi=CalcolaIndirizziCorsi(indirizziDipartimenti);
+        List<IndirizziCorsi> indirizziCorsi=CalcolaIndirizziCorsi(indirizziDipartimenti,"2013");
         
         prospetto=new RiepilogoPolo(aulePolo);
     }
