@@ -7,7 +7,7 @@
 package main;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -16,6 +16,7 @@ import java.util.List;
  
 import javax.net.ssl.HttpsURLConnection;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
@@ -48,18 +49,37 @@ class IndirizziCorsi
 
 public class DatiPolo {
     private RiepilogoPolo prospetto;
+    private static Document doc;
     
-    private final String urlIniziale="http://webapps.unitn.it/Orari/it/Web/CalendarioCds";
+    private Document DownloadHTML() throws IOException {
+        
+        final String urlIniziale="http://webapps.unitn.it/Orari/it/Web/CalendarioCds";    
+
+        doc = Jsoup.connect(urlIniziale).get();
+
+        return doc;
+    }
+    
+    private String CalcolaAnnoAccademico() {
+        Elements options = doc.getElementsByAttributeValue("name", "id");
+        
+        Elements anni = options.get(0).getElementsByTag("option");
+              
+        Elements annoselected = anni.get(0).getElementsByAttributeValue("selected", "selected");
+
+        String anno_id= annoselected.get(0).attributes().get("value");
+        
+        return anno_id;
+    }
+    
     
     private List<IndirizziDipartimenti> CalcolaIndirizziDipartimenti() throws Exception
     {
         List<IndirizziDipartimenti> indirizzi;
         indirizzi = new ArrayList<>();
         
-        Document doc = Jsoup.connect(urlIniziale).get();
-        
         Elements labels = doc.getElementsByAttributeValue("name", "id2");
-        
+
         Elements dipartimenti = labels.get(0).getElementsByTag("option");
                 
         for (int i = 1; i<dipartimenti.size(); i++) {
@@ -82,6 +102,8 @@ public class DatiPolo {
     public DatiPolo(String nomePolo,java.util.Date data) throws Exception
     {
         List<Aula> aulePolo = null;
+        doc = DownloadHTML();
+        
         List<IndirizziDipartimenti> indirizziDipartimenti=CalcolaIndirizziDipartimenti();
         List<IndirizziCorsi> indirizziCorsi=CalcolaIndirizziCorsi(indirizziDipartimenti);
         
