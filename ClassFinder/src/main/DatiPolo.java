@@ -113,7 +113,7 @@ public class DatiPolo {
         
        for(int i=1;i<indirizziDipartimenti.size();i++)
        {
-           json.add(new JSONObject(MandaRichiestaPost("id="+anno+"&id2="+indirizziDipartimenti.get(i).indirizzo)));
+           //json.add(new JSONObject(MandaRichiestaPost("id="+anno+"&id2="+indirizziDipartimenti.get(i).indirizzo)));
            
        }
  
