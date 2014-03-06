@@ -15,12 +15,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
  
-import javax.net.ssl.HttpsURLConnection;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
@@ -30,28 +28,28 @@ import org.jsoup.select.Elements;
  * @author creamcodifier
  */
 
-class IndirizziCorsi
+class Corsi
 {
     String indirizzo;
     String nome;
-    IndirizziCorsi(String indirizzo,String nome)
+    Corsi(String indirizzo,String nome)
     {
         this.indirizzo=indirizzo;
         this.nome=nome;
     }
 }
-class IndirizziDipartimenti
+class Dipartimenti
 {
     String indirizzo;
     String nome;
-    List<IndirizziCorsi> indirizziCorsi;
-    IndirizziDipartimenti(String indirizzo,String nome)
+    List<Corsi> indirizziCorsi;
+    Dipartimenti(String indirizzo,String nome)
     {
         this.indirizzo=indirizzo;
         this.nome=nome;
         indirizziCorsi=new ArrayList<>();
     }
-    public void AggiungiCorso(IndirizziCorsi indirizzoCorso)
+    public void AggiungiCorso(Corsi indirizzoCorso)
     {
         indirizziCorsi.add(indirizzoCorso);
     }
@@ -83,9 +81,9 @@ public class DatiPolo {
     }
     
     
-    private List<IndirizziDipartimenti> CalcolaIndirizziDipartimenti(Document doc) throws Exception
+    private List<Dipartimenti> InserisciDipartimenti(Document doc) throws Exception
     {
-        List<IndirizziDipartimenti> indirizzi;
+        List<Dipartimenti> indirizzi;
         indirizzi = new ArrayList<>();
         
         Elements labels = doc.getElementsByAttributeValue("name", "id2");
@@ -94,7 +92,7 @@ public class DatiPolo {
                 
         for (int i = 1; i<dipartimenti.size(); i++) {
             //indirizzi.add()
-            indirizzi.add(new IndirizziDipartimenti(dipartimenti.get(i).attributes().get("value"),dipartimenti.get(i).html()));
+            indirizzi.add(new Dipartimenti(dipartimenti.get(i).attributes().get("value"),dipartimenti.get(i).html()));
 //            TEST
         }
         
@@ -132,7 +130,7 @@ public class DatiPolo {
         return response.toString();
     }
     
-    void CalcolaIndirizziCorsi(List<IndirizziDipartimenti> indirizziDipartimenti, String anno) throws Exception
+    void InserisciCorsi(List<Dipartimenti> indirizziDipartimenti, String anno) throws Exception
     {
 
         List<JSONArray> json;
@@ -150,7 +148,7 @@ public class DatiPolo {
        {
             for(int j=0;j<json.get(i).size();j++)
             {
-                indirizziDipartimenti.get(i).AggiungiCorso(new IndirizziCorsi(((JSONObject)json.get(i).get(j)).get("Id").toString(),((JSONObject)json.get(i).get(j)).get("Descrizione").toString()));
+                indirizziDipartimenti.get(i).AggiungiCorso(new Corsi(((JSONObject)json.get(i).get(j)).get("Id").toString(),((JSONObject)json.get(i).get(j)).get("Descrizione").toString()));
             }
        }
 	//add reuqest header
@@ -161,8 +159,8 @@ public class DatiPolo {
         List<Aula> aulePolo = null;
         Document doc = DownloadHTML();
         
-        List<IndirizziDipartimenti> dipartimenti=CalcolaIndirizziDipartimenti(doc);
-        CalcolaIndirizziCorsi(dipartimenti,CalcolaAnnoAccademico(doc));
+        List<Dipartimenti> dipartimenti=InserisciDipartimenti(doc);
+        InserisciCorsi(dipartimenti,CalcolaAnnoAccademico(doc));
         //OttieniOrari(dipartimenti,)
         for(int i=0;i<dipartimenti.size();i++)
        {
