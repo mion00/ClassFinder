@@ -250,7 +250,7 @@ public class GestisciDati {
        }
     }
     
-    /*List<String> OttieniOrarioCorso(String indirizzoCorso,int anno,String inizioSettimana,String fineSettimana) throws Exception
+    List<String> OttieniOrarioCorso(String indirizzoCorso,int anno,String inizioSettimana,String fineSettimana) throws Exception
     {
         String url="http://webapps.unitn.it/Orari/it/Web/AjaxEventi/c/"+indirizzoCorso+"-"+anno+"/agendaWeek?_=&start="+inizioSettimana+"&end="+fineSettimana;
         List<String> dati=new ArrayList<>();
@@ -270,7 +270,7 @@ public class GestisciDati {
             }
         }
         return dati;
-    }*/
+    }
     
     List<List<String>> OttieniOrari(List<IndirizziDipartimenti> indirizziDipartimenti, String settimana)throws Exception
     {
