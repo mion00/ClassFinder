@@ -298,8 +298,8 @@ public class GestisciDati {
                     
             }
         }
-        
-        //DownloadFromUrls(urls);
+        Downloader downloader = new Downloader();
+        downloader.DownloadFromUrls(urls);
         
         return datiOttenuti;
     }

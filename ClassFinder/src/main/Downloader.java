@@ -6,8 +6,9 @@
 
 package main;
 
-import com.sun.org.apache.bcel.internal.generic.AALOAD;
+import java.io.*;
 import java.io.IOException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -26,8 +27,29 @@ public class Downloader {
     
     @Override
     public String call() throws IOException {
-        Document doc = Jsoup.connect(url).get();
-        return doc.body().text();
+        URL obj = new URL(url);
+        
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        con.setRequestMethod("GET");
+
+	// Send post request
+	con.setDoOutput(true);
+	DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+	wr.flush();
+	wr.close();
+ 
+ 
+	BufferedReader in = new BufferedReader(
+	        new InputStreamReader(con.getInputStream()));
+	String inputLine;
+	StringBuffer response = new StringBuffer();
+ 
+        while ((inputLine = in.readLine()) != null) {
+		response.append(inputLine);
+	}
+        in.close();
+        con.disconnect();
+        return response.toString();
     }
 
     public DownloadCallable(String url) {
@@ -36,7 +58,7 @@ public class Downloader {
     
     
 }
-    List<String> DownloadUrls (List<String> urls) throws InterruptedException, ExecutionException {
+    List<String> DownloadFromUrls (List<String> urls) throws InterruptedException, ExecutionException {
         
         ExecutorService service = Executors.newCachedThreadPool();
         CompletionService<String> excompl = new ExecutorCompletionService<String>(service);
