@@ -134,7 +134,7 @@ public class GestisciDati {
     
     //DownloadFromUrls(List<String> url)
     
-    private static JSONObject DownloadJSON(String url) throws Exception{
+    /*private static JSONObject DownloadJSON(String url) throws Exception{
 	URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
@@ -162,7 +162,7 @@ public class GestisciDati {
     
 	return (JSONObject)JSONValue.parse(response.toString());
  
-}
+}*/
     
     private String CalcolaAnnoAccademico(Document doc) {
         Elements options = doc.getElementsByAttributeValue("name", "id");
@@ -250,7 +250,7 @@ public class GestisciDati {
        }
     }
     
-    List<String> OttieniOrarioCorso(String indirizzoCorso,int anno,String inizioSettimana,String fineSettimana) throws Exception
+    /*List<String> OttieniOrarioCorso(String indirizzoCorso,int anno,String inizioSettimana,String fineSettimana) throws Exception
     {
         String url="http://webapps.unitn.it/Orari/it/Web/AjaxEventi/c/"+indirizzoCorso+"-"+anno+"/agendaWeek?_=&start="+inizioSettimana+"&end="+fineSettimana;
         List<String> dati=new ArrayList<>();
@@ -270,14 +270,19 @@ public class GestisciDati {
             }
         }
         return dati;
-    }
+    }*/
     
     List<List<String>> OttieniOrari(List<IndirizziDipartimenti> indirizziDipartimenti, String settimana)throws Exception
     {
         List<List<String>> datiOttenuti;
+        List<String> urls = new ArrayList<>();
         datiOttenuti=new ArrayList<>();
         long time=System.currentTimeMillis();
         long time2;
+        
+        String inizio = "1393887600";
+        String fine = "1343887600";
+        
         for(int j=0;j<indirizziDipartimenti.size();j++)
         {
             for(int i=0;i<indirizziDipartimenti.get(j).indirizziCorsi.size();i++)
@@ -285,13 +290,17 @@ public class GestisciDati {
                 for(int l=1;l<=5;l++)
                 {
                     time2=System.currentTimeMillis();
-                    datiOttenuti.add(OttieniOrarioCorso(indirizziDipartimenti.get(j).indirizziCorsi.get(i).indirizzo,l,"1393887600","140000000"));
+                    //datiOttenuti.add(OttieniOrarioCorso(indirizziDipartimenti.get(j).indirizziCorsi.get(i).indirizzo,l,"1393887600","140000000"));
+                    urls.add("http://webapps.unitn.it/Orari/it/Web/AjaxEventi/c/"+indirizziDipartimenti.get(j).indirizziCorsi.get(i).indirizzo+"-"+l+"/agendaWeek?_=&start="+inizio+"&end="+fine);
                     System.out.println(indirizziDipartimenti.get(j).nome+" "+indirizziDipartimenti.get(j).indirizziCorsi.get(i).nome+" "+l+" "+(time2-time));
                     time=time2;
                 }
                     
             }
         }
+        
+        //DownloadFromUrls(urls);
+        
         return datiOttenuti;
     }
     
