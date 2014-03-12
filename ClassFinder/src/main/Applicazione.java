@@ -27,7 +27,12 @@ public class Applicazione {
         
         
 
-        
-        DatiPolo dati=new DatiPolo("Povo1",data);
+        try{
+            GestisciDati dati=new GestisciDati(data);
+        }
+        catch(Exception e)
+                {
+                    System.out.println(e);
+                }
     }
 }
