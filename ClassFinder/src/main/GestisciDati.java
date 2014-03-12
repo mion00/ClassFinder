@@ -134,7 +134,7 @@ public class GestisciDati {
     
     //DownloadFromUrls(List<String> url)
     
-    /*private static JSONObject DownloadJSON(String url) throws Exception{
+    private static JSONObject DownloadJSON(String url) throws Exception{
 	URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
@@ -162,7 +162,7 @@ public class GestisciDati {
     
 	return (JSONObject)JSONValue.parse(response.toString());
  
-}*/
+}
     
     private String CalcolaAnnoAccademico(Document doc) {
         Elements options = doc.getElementsByAttributeValue("name", "id");
