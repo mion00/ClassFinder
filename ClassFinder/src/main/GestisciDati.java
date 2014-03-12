@@ -97,7 +97,7 @@ public class GestisciDati {
 		response.append(inputLine);
 	}
         in.close();
-        //con.disconnect();
+        con.disconnect();
         
     
 	return (JSONObject)JSONValue.parse(response.toString());
@@ -173,7 +173,8 @@ public class GestisciDati {
         
         json=new ArrayList<>();
         
-        Object obj; 
+        Object obj;
+        
 
        for(int i=0;i<indirizziDipartimenti.size();i++)
        {
@@ -215,12 +216,20 @@ public class GestisciDati {
     {
         List<List<String>> datiOttenuti;
         datiOttenuti=new ArrayList<>();
+        long time=System.currentTimeMillis();
+        long time2;
         for(int j=0;j<indirizziDipartimenti.size();j++)
         {
             for(int i=0;i<indirizziDipartimenti.get(j).indirizziCorsi.size();i++)
             {
                 for(int l=1;l<=5;l++)
-                    datiOttenuti.add(OttieniOrarioCorso(indirizziDipartimenti.get(j).indirizziCorsi.get(i).indirizzo,l,"1393887600","1394060400"));
+                {
+                    time2=System.currentTimeMillis();
+                    datiOttenuti.add(OttieniOrarioCorso(indirizziDipartimenti.get(j).indirizziCorsi.get(i).indirizzo,l,"1393887600","140000000"));
+                    System.out.println(indirizziDipartimenti.get(j).nome+" "+indirizziDipartimenti.get(j).indirizziCorsi.get(i).nome+" "+l+" "+(time2-time));
+                    time=time2;
+                }
+                    
             }
         }
         return datiOttenuti;
