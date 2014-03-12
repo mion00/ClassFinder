@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,21 @@ import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
-
+import com.ning.http.client.*;
+import java.util.Collection;
+import java.util.concurrent.AbstractExecutorService;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RunnableFuture;
+import java.util.logging.Level;
+import org.slf4j.Logger;
 /**
  *
  * @author creamcodifier
@@ -59,7 +74,44 @@ class Dipartimenti
     }
 }
 
+class DownloadCallable implements Callable<Response> {
+    AsyncHttpClient client;
+    String url;
+    Response resp;
+    
+    @Override
+    public Response call() throws IOException, InterruptedException, ExecutionException {
+        resp = client.prepareGet(url).execute().get();
+        return resp;
+    }
 
+    public DownloadCallable(AsyncHttpClient client, String url) {
+        this.client = client;
+        this.url = url;
+    }
+    
+    
+}
+
+class DownloadThread implements Runnable {
+    ListenableFuture<Response> listfut;
+    Response resp;
+    
+    @Override
+    public synchronized void run() {
+        try {
+            resp = listfut.get();
+            System.out.println(resp.getContentType());
+        } catch (InterruptedException | ExecutionException ex) {
+            java.util.logging.Logger.getLogger(DownloadThread.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public DownloadThread(ListenableFuture<Response> listfut) {
+        this.listfut = listfut; 
+    }
+
+}
 
 public class DatiPolo {
     private RiepilogoPolo prospetto;
@@ -68,14 +120,82 @@ public class DatiPolo {
     
     private Document DownloadHTML(String url) throws IOException {
         Document doc = Jsoup.connect(url).get();
-
         return doc;
+    }
+    
+    void openConnection(String url_string) throws IOException, InterruptedException, ExecutionException {
+        ExecutorService service = Executors.newCachedThreadPool();
+        CompletionService<Response> excompl = new ExecutorCompletionService<Response>(service);
+        
+        Collection<String> urls = new ArrayList<>();
+        for (int i=0; i<100; i++) {
+            urls.add("http://webapps.unitn.it/Orari/it/Web/AjaxEventi/c/10232-1/agendaWeek?_=&start=1393801200&end=1394406000");
+        }
+        
+        AsyncHttpClient asyncHttpClient = new AsyncHttpClient();
+        
+        //////////////////////////////////////////////////////////////
+        for (String s : urls) {
+            DownloadCallable downloadcallable = new DownloadCallable(asyncHttpClient, s);;
+            excompl.submit(downloadcallable);
+        }
+        
+        int nr_tasks = urls.size();
+        
+        List<Response> list_resp = new ArrayList<>();
+        
+        for (int i=0; i < nr_tasks; i++) {
+            Response r = excompl.take().get();
+            System.out.println(r.getStatusCode()+" "+i);
+            list_resp.add(r);
+        }
+        
+        for (int i=0; i < nr_tasks;i++) {
+//            System.out.println(list_resp.get(i).getStatusCode()+" "+i);
+        }
+        
+        service.shutdown();
+        /////////////////////////////////////////////////////////////
+//       USING LISTENER ON FUTURE
+//       AsyncHttpClient.BoundRequestBuilder request = asyncHttpClient.prepareGet(url_string); 
+//        for (int i=0; i < 50; i++) {
+//            
+//        DownloadThread down = new DownloadThread(request.execute());
+//        
+//                
+//        Thread t = new Thread(down);
+//             
+//        down.listfut.addListener(t, service);
+//        }
+        ///////////////////////////////////////////////////////////////////
+//        for (int i=0; i< 100; i++) {    
+//           excompl.submit(asyncHttpClient.prepareGet(url_string).execute(), resp);    
+//        }
+        
+        
+//        for (int i=0; i<100;i++) {
+//            Future<Response> response = excompl.take();
+//            System.out.println(response.get().getContentType());
+//        }
+        
+//        AsyncHttpClient asyncHttpClient = new AsyncHttpClient();
+//        List<Future<Response>> risposte = new ArrayList<>();
+//        for (int i=0; i<100; i++) {
+//            Future<Response> f = asyncHttpClient.prepareGet(url_string).execute();
+//            risposte.add(f);
+//        }
+//        for (int i=0; i<100; i++) {
+//            Response r = risposte.get(i).get();
+//            System.out.println(r.getContentType());
+//        }
+         
     }
     
     private static JSONObject DownloadJSON(String url) throws Exception{
 	URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
+        con.setUseCaches(true);
 
  
 	// Send post request
@@ -199,7 +319,7 @@ public class DatiPolo {
             oggetto=(JSONObject)array.get(i);
             if(oggetto!=null)
                 System.out.print(oggetto.get("title").toString());
-                System.out.println(" "+oggetto.get("start")+" "+oggetto.get("end"));
+                System.out.print(" "+oggetto.get("start")+" "+oggetto.get("end"));
                 System.out.println();
         }
         
@@ -219,14 +339,17 @@ public class DatiPolo {
     
     public DatiPolo(String nomePolo,java.util.Date data) throws Exception
     {
+        
+        openConnection("http://www.google.com");
+        
         List<Aula> aulePolo = null;
         Document doc = DownloadHTML(urlIniziale);
-        
-        List<Dipartimenti> dipartimenti=InserisciDipartimenti(doc);
+        //List<Dipartimenti> dipartimenti=InserisciDipartimenti(doc);
         //qui inserire il filtro!
-        InserisciCorsi(dipartimenti,CalcolaAnnoAccademico(doc));
+        //InserisciCorsi(dipartimenti,CalcolaAnnoAccademico(doc));
         // http://webapps.unitn.it/Orari/it/Web/AjaxEventi/c/10133-3/agendaWeek?_=&start=1393801200&end=1394406000
-        OttieniOrari(dipartimenti,"1393801200");
+        //OttieniOrari(dipartimenti,"1393801200");
+        
         
         /*for(int i=0;i<dipartimenti.size();i++)
        {
