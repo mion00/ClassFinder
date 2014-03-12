@@ -6,6 +6,8 @@
 
 package main;
 
+import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.Response;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -16,7 +18,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
  
 import javax.net.ssl.HttpsURLConnection;
 import org.json.simple.JSONArray;
@@ -60,6 +69,25 @@ class IndirizziDipartimenti
     }
 }
 
+class DownloadCallable implements Callable<Response> {
+    AsyncHttpClient client;
+    String url;
+    Response resp;
+    
+    @Override
+    public Response call() throws IOException, InterruptedException, ExecutionException {
+        resp = client.prepareGet(url).execute().get();
+        return resp;
+    }
+
+    public DownloadCallable(AsyncHttpClient client, String url) {
+        this.client = client;
+        this.url = url;
+    }
+    
+    
+}
+
 
 
 public class GestisciDati {
@@ -74,7 +102,39 @@ public class GestisciDati {
         return doc;
     }
     
-    private static JSONObject DownloadJSON(String url) throws Exception{
+    void openConnection(List<String> url_string) throws IOException, InterruptedException, ExecutionException {
+        ExecutorService service = Executors.newCachedThreadPool();
+        CompletionService<Response> excompl = new ExecutorCompletionService<Response>(service);
+        
+        Collection<String> urls = new ArrayList<>();
+        for (int i=0; i<100; i++) {
+            urls.add("http://webapps.unitn.it/Orari/it/Web/AjaxEventi/c/10232-1/agendaWeek?_=&start=1393801200&end=1394406000");
+        }
+        
+        AsyncHttpClient asyncHttpClient = new AsyncHttpClient();
+        
+        //////////////////////////////////////////////////////////////
+        for (String s : urls) {
+            DownloadCallable downloadcallable = new DownloadCallable(asyncHttpClient, s);;
+            excompl.submit(downloadcallable);
+        }
+        
+        int nr_tasks = urls.size();
+        
+        List<Response> list_resp = new ArrayList<>();
+        
+        for (int i=0; i < nr_tasks; i++) {
+            Response r = excompl.take().get();
+            System.out.println(r.getStatusCode()+" "+i);
+            list_resp.add(r);
+        }
+        
+        service.shutdown(); 
+    }
+    
+    //DownloadFromUrls(List<String> url)
+    
+    /*private static JSONObject DownloadJSON(String url) throws Exception{
 	URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
@@ -102,7 +162,7 @@ public class GestisciDati {
     
 	return (JSONObject)JSONValue.parse(response.toString());
  
-}
+}*/
     
     private String CalcolaAnnoAccademico(Document doc) {
         Elements options = doc.getElementsByAttributeValue("name", "id");
@@ -190,7 +250,7 @@ public class GestisciDati {
        }
     }
     
-    List<String> OttieniOrarioCorso(String indirizzoCorso,int anno,String inizioSettimana,String fineSettimana) throws Exception
+    /*List<String> OttieniOrarioCorso(String indirizzoCorso,int anno,String inizioSettimana,String fineSettimana) throws Exception
     {
         String url="http://webapps.unitn.it/Orari/it/Web/AjaxEventi/c/"+indirizzoCorso+"-"+anno+"/agendaWeek?_=&start="+inizioSettimana+"&end="+fineSettimana;
         List<String> dati=new ArrayList<>();
@@ -210,7 +270,7 @@ public class GestisciDati {
             }
         }
         return dati;
-    }
+    }*/
     
     List<List<String>> OttieniOrari(List<IndirizziDipartimenti> indirizziDipartimenti, String settimana)throws Exception
     {
